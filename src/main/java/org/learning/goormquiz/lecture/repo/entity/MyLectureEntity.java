@@ -1,10 +1,12 @@
 package org.learning.goormquiz.lecture.repo.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.learning.goormquiz.member.repo.entity.MemberEntity;
+
 
 @Entity
 @Getter
@@ -13,7 +15,16 @@ import lombok.NoArgsConstructor;
 @Table(name = "my_lecture")
 public class MyLectureEntity {
 
-    /**
-     * lecture, member 연관관계
-     */
+    @Id
+    @GeneratedValue
+    @Column(name = "MEMBER_TEAM_ID")
+    private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "MEMBER_ID")
+    private MemberEntity member;
+
+    @ManyToOne
+    @JoinColumn(name = "LECTURE_ID")
+    private LectureEntity lecture;
 }

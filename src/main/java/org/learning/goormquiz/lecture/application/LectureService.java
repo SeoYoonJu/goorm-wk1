@@ -5,9 +5,15 @@ import org.learning.goormquiz.common.domain.dto.CommonSuccessDto;
 import org.learning.goormquiz.lecture.application.dto.request.CreateLectureRequestDto;
 import org.learning.goormquiz.lecture.application.dto.request.UpdateLectureTitleRequestDto;
 import org.learning.goormquiz.lecture.application.dto.response.GetLectureResponseDto;
-import org.learning.goormquiz.lecture.application.interfaces.LectureRepository;
+import org.learning.goormquiz.lecture.repo.entity.LectureEntity;
+import org.learning.goormquiz.lecture.repo.entity.LectureInfoEntity;
+import org.learning.goormquiz.lecture.repo.entity.Price;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
@@ -16,38 +22,58 @@ public class LectureService {
 
     private final LectureRepository lectureRepository;
 
-    /**
-     * TODO
-     * lectureRepository에서 데이터를 조회
-     */
     public GetLectureResponseDto findLecture(Long lectureId) {
-        return null;
+
+        Optional<LectureEntity> lecture = lectureRepository.findById(lectureId);
+        LectureEntity lectureEntity = lecture.orElseThrow(() -> new RuntimeException("강의를 찾을 수 없습니다."));
+
+        // LectureEntity를 GetLectureResponseDto로 변환
+        return GetLectureResponseDto.fromEntity(lectureEntity);
     }
 
-    /**
-     * TODO
-     * lectureRepository를 이용해 데이터를 생성
-     */
     @Transactional
     public CommonSuccessDto createLecture(CreateLectureRequestDto dto) {
-        return null;
+
+        LectureInfoEntity lectureInfo = new LectureInfoEntity();
+        lectureInfo.setTitle(dto.title());
+        lectureInfo.setGoals(String.join("|", dto.goals())); // List<String>를 "|"로 구분된 String으로 변환
+        lectureInfo.setTarget(String.join("|", dto.target())); // List<String>를 "|"로 구분된 String으로 변환
+
+        // LectureEntity 생성
+        LectureEntity lecture = new LectureEntity();
+        lecture.setImageUrl(dto.imageUrl());
+        lecture.setInstructor(dto.instructor());
+        lecture.setPrice(dto.price());
+        lecture.setLectureUrl(dto.lectureUrl());
+        lecture.setLectureInfo(lectureInfo);
+
+        // LectureEntity 저장
+        lectureRepository.save(lecture);
+
+        // 성공 응답 반환
+        return new CommonSuccessDto(true);
+
     }
 
-    /**
-     * TODO
-     * lectureRepository를 이용해 데이터의 title 변경
-     */
     @Transactional
     public CommonSuccessDto updateLecture(Long lectureId, UpdateLectureTitleRequestDto dto) {
-        return null;
+        LectureEntity lecture = lectureRepository.findById(lectureId)
+                .orElseThrow(() -> new RuntimeException(""));
+
+        lecture.getLectureInfo().setTitle(dto.title());
+        return new CommonSuccessDto(true);
     }
 
-    /**
-     * TODO
-     * lectureRepository를 이용해 데이터 삭제
-     */
     @Transactional
     public CommonSuccessDto deleteLecture(Long lectureId) {
-        return null;
+        LectureEntity lecture = lectureRepository.findById(lectureId)
+                .orElseThrow(() -> new RuntimeException(""));
+
+        lectureRepository.delete(lecture);
+        return new CommonSuccessDto(true);
+    }
+
+    public List<LectureEntity> findLecturesByMemberId(Long memberId) {
+        return lectureRepository.findByMyLectureMemberId(memberId);
     }
 }
